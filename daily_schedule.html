@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kundalik Reja</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .container {
+            max-width: 1200px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border: none;
+            margin-bottom: 20px;
+        }
+        .card-header {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            font-weight: bold;
+        }
+        .day-card {
+            transition: all 0.3s ease;
+        }
+        .day-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+        .task-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s ease;
+        }
+        .task-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+        .task-item.completed {
+            background: #d4edda;
+            border-left-color: #28a745;
+            opacity: 0.8;
+        }
+        .task-item.completed .task-text {
+            text-decoration: line-through;
+            color: #6c757d;
+        }
+        .time-badge {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+        .progress-bar {
+            background: linear-gradient(45deg, #28a745, #20c997);
+        }
+        .stats-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        .stats-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .nav-pills .nav-link {
+            border-radius: 25px;
+            margin: 0 5px;
+            transition: all 0.3s ease;
+        }
+        .nav-pills .nav-link.active {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+        }
+        .btn-reset {
+            background: linear-gradient(45deg, #dc3545, #c82333);
+            border: none;
+            border-radius: 25px;
+            color: white;
+        }
+        .week-progress {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .custom-checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            .stats-card {
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Haftalik statistika -->
+        <div class="week-progress">
+            <h3 class="text-center mb-4"><i class="fas fa-calendar-week"></i> Haftalik Progress</h3>
+            <div class="row">
+                <div class="col-md-3 col-6">
+                    <div class="stats-card">
+                        <i class="fas fa-tasks fa-2x mb-2 text-primary"></i>
+                        <div class="stats-number" id="totalTasks">0</div>
+                        <div>Jami vazifalar</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="stats-card">
+                        <i class="fas fa-check-circle fa-2x mb-2 text-success"></i>
+                        <div class="stats-number" id="completedTasks">0</div>
+                        <div>Bajarilgan</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="stats-card">
+                        <i class="fas fa-percentage fa-2x mb-2 text-info"></i>
+                        <div class="stats-number" id="weekPercentage">0%</div>
+                        <div>Haftalik foiz</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="stats-card">
+                        <i class="fas fa-calendar-day fa-2x mb-2 text-warning"></i>
+                        <div class="stats-number" id="currentDayProgress">0%</div>
+                        <div>Bugun</div>
+                    </div>
+                </div>
+            </div>
+            <div class="progress mt-3" style="height: 25px;">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                     id="weekProgressBar" role="progressbar" style="width: 0%">
+                    0%
+                </div>
+            </div>
+        </div>
+
+        <!-- Kunlar tanlash -->
+        <ul class="nav nav-pills justify-content-center mb-4" id="dayTabs">
+            <li class="nav-item">
+                <a class="nav-link active" data-day="monday" href="#">
+                    <i class="fas fa-calendar-day"></i> Dushanba
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-day="tuesday" href="#">
+                    <i class="fas fa-calendar-day"></i> Seshanba
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-day="wednesday" href="#">
+                    <i class="fas fa-calendar-day"></i> Chorshanba
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-day="thursday" href="#">
+                    <i class="fas fa-calendar-day"></i> Payshanba
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-day="friday" href="#">
+                    <i class="fas fa-calendar-day"></i> Juma
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-day="saturday" href="#">
+                    <i class="fas fa-calendar-day"></i> Shanba
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-day="sunday" href="#">
+                    <i class="fas fa-calendar-day"></i> Yakshanba
+                </a>
+            </li>
+        </ul>
+
+        <!-- Kunlik reja -->
+        <div class="card day-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h3 id="dayTitle"><i class="fas fa-clock"></i> Dushanba Rejasi</h3>
+                <div>
+                    <span class="badge bg-success me-2" id="dayProgress">0%</span>
+                    <button class="btn btn-sm btn-reset" onclick="resetDay()">
+                        <i class="fas fa-redo"></i> Kunni qayta boshlash
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="scheduleContent">
+                    <!-- Schedule content will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Haftalik jadval ma'lumotlari
+        const weeklySchedule = {
+            monday: {
+                title: "Dushanba Rejasi",
+                tasks: [
+                    { time: "04:20", task: "Uyg'onish", duration: 0 },
+                    { time: "04:30", task: "Tahorat olish va masjidga borish", duration: 40 },
+                    { time: "05:10", task: "Uyga qaytish", duration: 0 },
+                    { time: "05:15", task: "Nonushta tayyorlash", duration: 30 },
+                    { time: "05:45", task: "Mashq va trenirovka", duration: 25 },
+                    { time: "06:10", task: "Dam olish", duration: 10 },
+                    { time: "06:20", task: "Dars qilish", duration: 100 },
+                    { time: "08:00", task: "Kolejga harakat qilish", duration: 10 },
+                    { time: "08:10", task: "Mashinaga chiqish", duration: 20 },
+                    { time: "08:30", task: "Kolejga yetib borish", duration: 0 },
+                    { time: "08:30", task: "1-para boshlanishi", duration: 90 },
+                    { time: "10:00", task: "2-para boshlanishi", duration: 90 },
+                    { time: "11:30", task: "3-para boshlanishi", duration: 50 },
+                    { time: "12:20", task: "Javob va do'stlar bilan hayrlashish", duration: 15 },
+                    { time: "12:35", task: "Mashinaga chiqish", duration: 25 },
+                    { time: "13:00", task: "Uyga yetib borish", duration: 0 },
+                    { time: "13:00", task: "Kiyim almashtirish", duration: 15 },
+                    { time: "13:15", task: "Peshin namozi", duration: 15 },
+                    { time: "13:30", task: "Obed qilish", duration: 20 },
+                    { time: "13:50", task: "Dars qilish", duration: 40 },
+                    { time: "14:30", task: "Uxlash", duration: 60 },
+                    { time: "15:30", task: "Uyg'onish va o'qishga tayyorgarlik", duration: 30 },
+                    { time: "16:00", task: "Kutubxonada dars qilish", duration: 95 },
+                    { time: "17:35", task: "Kursga borish", duration: 65 },
+                    { time: "18:40", task: "Kursdan chiqish", duration: 20 },
+                    { time: "19:00", task: "Uyga yetib borish", duration: 0 },
+                    { time: "19:00", task: "Kiyim almashtirish", duration: 10 },
+                    { time: "19:10", task: "Shom namozi", duration: 0 },
+                    { time: "19:10", task: "Kechki ovqatlanish", duration: 40 },
+                    { time: "19:50", task: "Dars qilish", duration: 120 },
+                    { time: "21:50", task: "O'yin dam olish", duration: 10 },
+                    { time: "22:00", task: "Uxlashga tayyorgarlik", duration: 30 },
+                    { time: "22:30", task: "Uxlash", duration: 0 }
+                ]
+            },
+            tuesday: {
+                title: "Seshanba Rejasi (Kurs kuni)",
+                tasks: [
+                    { time: "04:20", task: "Uyg'onish", duration: 0 },
+                    { time: "04:30", task: "Tahorat olish va masjidga borish", duration: 40 },
+                    { time: "05:10", task: "Uyga qaytish", duration: 0 },
+                    { time: "05:15", task: "Nonushta tayyorlash", duration: 30 },
+                    { time: "05:45", task: "Mashq va trenirovka", duration: 25 },
+                    { time: "06:10", task: "Dam olish", duration: 10 },
+                    { time: "06:20", task: "Dars qilish", duration: 100 },
+                    { time: "08:00", task: "Kolejga harakat qilish", duration: 10 },
+                    { time: "08:10", task: "Mashinaga chiqish", duration: 20 },
+                    { time: "08:30", task: "Kolejga yetib borish", duration: 0 },
+                    { time: "08:30", task: "1-para + O'qituvchi topshig'i (20 daqiqa)", duration: 90 },
+                    { time: "10:00", task: "2-para + Do'stlar bilan muloqot", duration: 90 },
+                    { time: "11:30", task: "3-para + Kurs vazifalari", duration: 50 },
+                    { time: "12:20", task: "Javob va do'stlar bilan hayrlashish", duration: 15 },
+                    { time: "12:35", task: "Mashinaga chiqish", duration: 25 },
+                    { time: "13:00", task: "Uyga yetib borish", duration: 0 },
+                    { time: "13:00", task: "Kiyim almashtirish", duration: 15 },
+                    { time: "13:15", task: "Peshin namozi", duration: 15 },
+                    { time: "13:30", task: "Obed qilish", duration: 20 },
+                    { time: "13:50", task: "Dars qilish", duration: 40 },
+                    { time: "14:30", task: "Uxlash", duration: 60 },
+                    { time: "15:30", task: "Uyg'onish va tayyorgarlik", duration: 30 },
+                    { time: "16:00", task: "Dars qilish", duration: 60 },
+                    { time: "17:00", task: "Asr namozi", duration: 0 },
+                    { time: "17:00", task: "Tanaffus", duration: 30 },
+                    { time: "17:30", task: "Badiiy kitob o'qish", duration: 60 },
+                    { time: "18:30", task: "Mashq qilish", duration: 25 },
+                    { time: "18:55", task: "Shom namozi uchun masjidga borish", duration: 15 },
+                    { time: "19:10", task: "Kechki ovqatlanish", duration: 40 },
+                    { time: "19:50", task: "Bobo va buvimga tashrif", duration: 25 },
+                    { time: "20:15", task: "Masjidga borish", duration: 40 },
+                    { time: "20:55", task: "Bobo va buvimga qaytish", duration: 45 },
+                    { time: "21:40", task: "Uyga qaytish", duration: 0 },
+                    { time: "21:40", task: "Ko'z yugirish", duration: 30 },
+                    { time: "22:10", task: "Uxlashga tayyorgarlik", duration: 20 },
+                    { time: "22:30", task: "Uxlash", duration: 0 }
+                ]
+            },
+            wednesday: {
+                title: "Chorshanba Rejasi (Kurs kuni)",
+                tasks: [
+                    { time: "04:20", task: "Uyg'onish", duration: 0 },
+                    { time: "04:30", task: "Tahorat olish va masjidga borish", duration: 40 },
+                    { time: "05:10", task: "Uyga qaytish", duration: 0 },
+                    { time: "05:15", task: "Nonushta tayyorlash", duration: 30 },
+                    { time: "05:45", task: "Mashq va trenirovka", duration: 25 },
+                    { time: "06:10", task: "Dam olish", duration: 10 },
+                    { time: "06:20", task: "Dars qilish", duration: 100 },
+                    { time: "08:00", task: "Kolejga harakat qilish", duration: 10 },
+                    { time: "08:10", task: "Mashinaga chiqish", duration: 20 },
+                    { time: "08:30", task: "Kolejga yetib borish", duration: 0 },
+                    { time: "08:30", task: "1-para + O'qituvchi topshig'i (20 daqiqa)", duration: 90 },
+                    { time: "10:00", task: "2-para + Do'stlar bilan muloqot", duration: 90 },
+                    { time: "11:30", task: "3-para + Kurs vazifalari", duration: 50 },
+                    { time: "12:20", task: "Javob va do'stlar bilan hayrlashish", duration: 15 },
+                    { time: "12:35", task: "Mashinaga chiqish", duration: 25 },
+                    { time: "13:00", task: "Uyga yetib borish", duration: 0 },
+                    { time: "13:00", task: "Kiyim almashtirish", duration: 15 },
+                    { time: "13:15", task: "Peshin namozi", duration: 15 },
+                    { time: "13:30", task: "Obed qilish", duration: 20 },
+                    { time: "13:50", task: "Dars qilish", duration: 40 },
+                    { time: "14:30", task: "Uxlash", duration: 60 },
+                    { time: "15:30", task: "Uyg'onish va tayyorgarlik", duration: 30 },
+                    { time: "16:00", task: "Dars qilish", duration: 60 },
+                    { time: "17:00", task: "Asr namozi", duration: 0 },
+                    { time: "17:00", task: "Tanaffus", duration: 30 },
+                    { time: "17:30", task: "Badiiy kitob o'qish", duration: 60 },
+                    { time: "18:30", task: "Mashq qilish", duration: 25 },
+                    { time: "18:55", task: "Shom namozi uchun masjidga borish", duration: 15 },
+                    { time: "19:10", task: "Kechki ovqatlanish", duration: 40 },
+                    { time: "19:50", task: "Bobo va buvimga tashrif", duration: 25 },
+                    { time: "20:15", task: "Masjidga borish", duration: 40 },
+                    { time: "20:55", task: "Bobo va buvimga qaytish", duration: 45 },
+                    { time: "21:40", task: "Uyga qaytish", duration: 0 },
+                    { time: "21:40", task: "Ko'z yugirish", duration: 30 },
+                    { time: "22:10", task: "Uxlashga tayyorgarlik", duration: 20 },
+                    { time: "22:30", task: "Uxlash", duration: 0 }
+                ]
+            },
+            thursday: {
+                title: "Payshanba Rejasi",
+                tasks: [
+                    { time: "04:20", task: "Uyg'onish", duration: 0 },
+                    { time: "04:30", task: "Tahorat olish va masjidga borish", duration: 40 },
+                    { time: "05:10", task: "Uyga qaytish", duration: 0 },
+                    { time: "05:15", task: "Nonushta tayyorlash", duration: 30 },
+                    { time: "05:45", task: "Mashq va trenirovka", duration: 25 },
+                    { time: "06:10", task: "Dam olish", duration: 10 },
+                    { time: "06:20", task: "Dars qilish", duration: 100 },
+                    { time: "08:00", task: "Kolejga harakat qilish", duration: 10 },
+                    { time: "08:10", task: "Mashinaga chiqish", duration: 20 },
+                    { time: "08:30", task: "Kolejga yetib borish", duration: 0 },
+                    { time: "08:30", task: "1-para + O'qituvchi topshig'i (20 daqiqa)", duration: 90 },
+                    { time: "10:00", task: "2-para + Do'stlar bilan muloqot", duration: 90 },
+                    { time: "11:30", task: "3-para + Kurs vazifalari", duration: 50 },
+                    { time: "12:20", task: "Javob va do'stlar bilan hayrlashish", duration: 15 },
+                    { time: "12:35", task: "Mashinaga chiqish", duration: 25 },
+                    { time: "13:00", task: "Uyga yetib borish", duration: 0 },
+                    { time: "13:00", task: "Kiyim almashtirish", duration: 15 },
+                    { time: "13:15", task: "Peshin namozi", duration: 15 },
+                    { time: "13:30", task: "Obed qilish", duration: 20 },
+                    { time: "13:50", task: "Dars qilish", duration: 40 },
+                    { time: "14:30", task: "Uxlash", duration: 60 },
+                    { time: "15:30", task: "Uyg'onish va tayyorgarlik", duration: 30 },
+                    { time: "16:00", task: "Dars qilish", duration: 60 },
+                    { time: "17:00", task: "Asr namozi", duration: 0 },
+                    { time: "17:00", task: "Tanaffus", duration: 30 },
+                    { time: "17:30", task: "Badiiy kitob o'qish", duration: 60 },
+                    { time: "18:30", task: "Mashq qilish", duration: 25 },
+                    { time: "18:55", task: "Shom namozi uchun masjidga borish", duration: 15 },
+                    { time: "19:10", task: "Kechki ovqatlanish", duration: 40 },
+                    { time: "19:50", task: "Bobo va buvimga tashrif", duration: 25 },
+                    { time: "20:15", task: "Masjidga borish", duration: 40 },
+                    { time: "20:55", task: "Bobo va buvimga qaytish", duration: 45 },
+                    { time: "21:40", task: "Uyga qaytish", duration: 0 },
+                    { time: "21:40", task: "Ko'z yugirish", duration: 30 },
+                    { time: "22:10", task: "Uxlashga tayyorgarlik", duration: 20 },
+                    { time: "22:30", task: "Uxlash", duration: 0 }
+                ]
+            },
+            friday: {
+                title: "Juma Rejasi",
+                tasks: [
+                    { time: "04:20", task: "Uyg'onish", duration: 0 },
+                    { time: "04:30", task: "Tahorat olish va masjidga borish", duration: 40 },
+                    { time: "05:10", task: "Uyga qaytish", duration: 0 },
+                    { time: "05:15", task: "Nonushta tayyorlash", duration: 30 },
+                    { time: "05:45", task: "Mashq va trenirovka", duration: 25 },
+                    { time: "06:10", task: "Dam olish", duration: 10 },
+                    { time: "06:20", task: "Dars qilish", duration: 100 },
+                    { time: "08:00", task: "Kolejga harakat qilish", duration: 10 },
+                    { time: "08:10", task: "Mashinaga chiqish", duration: 20 },
+                    { time: "08:30", task: "Kolejga yetib borish", duration: 0 },
+                    { time: "08:30", task: "1-para + O'qituvchi topshig'i (20 daqiqa)", duration: 90 },
+                    { time: "10:00", task: "2-para + Do'stlar bilan muloqot", duration: 90 },
+                    { time: "11:30", task: "3-para + Kurs vazifalari", duration: 50 },
+                    { time: "12:20", task: "Javob va do'stlar bilan hayrlashish", duration: 5 },
+                    { time: "12:25", task: "Uyga shoshilib borish", duration: 15 },
+                    { time: "12:40", task: "Uyga yetib borish", duration: 0 },
+                    { time: "12:40", task: "Juma namozi uchun masjidga borish", duration: 5 },
+                    { time: "12:45", task: "Juma namozi", duration: 25 },
+                    { time: "13:10", task: "Uyga qaytish", duration: 10 },
+                    { time: "13:20", task: "Kiyim almashtirish", duration: 0 },
+                    { time: "13:20", task: "Ovqatlanish", duration: 30 },
+                    { time: "13:50", task: "Dars qilish", duration: 40 },
+                    { time: "14:30", task: "Uxlash", duration: 60 },
+                    { time: "15:30", task: "Uyg'onish va tayyorgarlik", duration: 30 },
+                    { time: "16:00", task: "Dars qilish", duration: 60 },
+                    { time: "17:00", task: "Asr namozi", duration: 0 },
+                    { time: "17:00", task: "Tanaffus", duration: 30 },
+                    { time: "17:30", task: "Badiiy kitob o'qish", duration: 60 },
+                    { time: "18:30", task: "Mashq qilish", duration: 25 },
+                    { time: "18:55", task: "Shom namozi uchun masjidga borish", duration: 15 },
+                    { time: "19:10", task: "Kechki ovqatlanish", duration: 40 },
+                    { time: "19:50", task: "Bobo va buvimga tashrif", duration: 25 },
+                    { time: "20:15", task: "Masjidga borish", duration: 40 },
+                    { time: "20:55", task: "Bobo va buvimga qaytish", duration: 45 },
+                    { time: "21:40", task: "Uyga qaytish", duration: 0 },
+                    { time: "21:40", task: "Ko'z yugirish", duration: 30 },
+                    { time: "22:10", task: "Uxlashga tayyorgarlik", duration: 20 },
+                    { time: "22:30", task: "Uxlash", duration: 0 }
+                ]
+            },
+            saturday: {
+                title: "Shanba Rejasi",
+                tasks: [
+                    { time: "04:20", task: "Uyg'onish", duration: 0 },
+                    { time: "04:30", task: "Tahorat olish va masjidga borish", duration: 40 },
+                    { time: "05:10", task: "Uyga qaytish", duration: 0 },
+                    { time: "05:15", task: "Nonushta tayyorlash", duration: 30 },
+                    { time: "05:45", task: "Mashq va trenirovka", duration: 25 },
+                    { time: "06:10", task: "Dam olish", duration: 10 },
+                    { time: "06:20", task: "Dars qilish", duration: 180 },
+                    { time: "09:20", task: "Kursga borish", duration: 30 },
+                    { time: "09:50", task: "Kutubxonada kutish", duration: 10 },
+                    { time: "10:00", task: "Kurs boshlanishi", duration: 100 },
+                    { time: "11:40", task: "Kursdan chiqish", duration: 10 },
+                    { time: "11:50", task: "Kolejga o'tish", duration: 30 },
+                    { time: "12:20", task: "Javob va do'stlar bilan hayrlashish", duration: 15 },
+                    { time: "12:35", task: "Mashinaga chiqish", duration: 25 },
+                    { time: "13:00", task: "Uyga yetib borish", duration: 0 },
+                    { time: "13:00", task: "Kiyim almashtirish", duration: 15 },
+                    { time: "13:15", task: "Peshin namozi", duration: 15 },
+                    { time: "13:30", task: "Obed qilish", duration: 20 },
+                    { time: "13:50", task: "Dars qilish", duration: 40 },
+                    { time: "14:30", task: "Uxlash", duration: 60 },
+                    { time: "15:30", task: "Uyg'onish va tayyorgarlik", duration: 30 },
+                    { time: "16:00", task: "Dars qilish", duration: 60 },
+                    { time: "17:00", task: "Asr namozi", duration: 0 },
+                    { time: "17:00", task: "Tanaffus", duration: 30 },
+                    { time: "17:30", task: "Badiiy kitob o'qish", duration: 60 },
+                    { time: "18:30", task: "Mashq qilish", duration: 25 },
+                    { time: "18:55", task: "Shom namozi uchun masjidga borish", duration: 15 },
+                    { time: "19:10", task: "Kechki ovqatlanish", duration: 40 },
+                    { time: "19:50", task: "Bobo va buvimga tashrif", duration: 25 },
+                    { time: "20:15", task: "Masjidga borish", duration: 40 },
+                    { time: "20:55", task: "Bobo va buvimga qaytish", duration: 45 },
+                    { time: "21:40", task: "Uyga qaytish", duration: 0 },
+                    { time: "21:40", task: "Ko'z yugirish", duration: 30 },
+                    { time: "22:10", task: "Uxlashga tayyorgarlik", duration: 20 },
+                    { time: "22:30", task: "Uxlash", duration: 0 }
+                ]
+            },
+            sunday: {
+                title: "Yakshanba Rejasi (Dam olish kuni)",
+                tasks: [
+                    { time: "04:20", task: "Uyg'onish", duration: 0 },
+                    { time: "04:30", task: "Tahorat olish va masjidga borish", duration: 40 },
+                    { time: "05:10", task: "Uyga qaytish", duration: 0 },
+                    { time: "05:15", task: "Nonushta tayyorlash", duration: 30 },
+                    { time: "05:45", task: "Mashq va trenirovka", duration: 25 },
+                    { time: "06:10", task: "Dam olish", duration: 10 },
+                    { time: "06:20", task: "Erkin vaqt / Oilaviy vaqt", duration: 120 },
+                    { time: "08:20", task: "Qolgan darslar va topshiriqlar", duration: 120 },
+                    { time: "10:20", task: "Kitob o'qish", duration: 60 },
+                    { time: "11:20", task: "O'yin va hordiq", duration: 40 },
+                    { time: "12:00", task: "Peshin namozi", duration: 0 },
+                    { time: "12:00", task: "Obed qilish", duration: 30 },
+                    { time: "12:30", task: "Oilaviy tashriflar / Do'stlar bilan uchrashuv", duration: 120 },
+                    { time: "14:30", task: "Uxlash", duration: 60 },
+                    { time: "15:30", task: "Uyg'onish", duration: 0 },
+                    { time: "15:30", task: "Asr namozi", duration: 0 },
+                    { time: "15:30", task: "Erkin vaqt", duration: 120 },
+                    { time: "17:30", task: "Hafiza qilish / Takrorlash", duration: 60 },
+                    { time: "18:30", task: "Mashq qilish", duration: 25 },
+                    { time: "18:55", task: "Shom namozi", duration: 0 },
+                    { time: "19:00", task: "Kechki ovqatlanish", duration: 40 },
+                    { time: "19:40", task: "Oilaviy suhbat", duration: 60 },
+                    { time: "20:40", task: "Kunni rejalashtirish", duration: 20 },
+                    { time: "21:00", task: "Ko'z yugirish", duration: 30 },
+                    { time: "21:30", task: "Uxlashga tayyorgarlik", duration: 30 },
+                    { time: "22:00", task: "Uxlash", duration: 0 }
+                ]
+            }
+        };
+
+        // Task completion tracking
+        let taskCompletion = {};
+
+        // Initialize task completion for all days
+        function initializeTaskCompletion() {
+            Object.keys(weeklySchedule).forEach(day => {
+                taskCompletion[day] = {};
+                weeklySchedule[day].tasks.forEach((task, index) => {
+                    taskCompletion[day][index] = false;
+                });
+            });
+        }
+
+        // Load saved data from localStorage
+        function loadData() {
+            const saved = localStorage.getItem('taskCompletion');
+            if (saved) {
+                taskCompletion = JSON.parse(saved);
+            } else {
+                initializeTaskCompletion();
+            }
+        }
+
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem('taskCompletion', JSON.stringify(taskCompletion));
+        }
+
+        // Render schedule for specific day
+        function renderSchedule(day) {
+            const schedule = weeklySchedule[day];
+            const content = document.getElementById('scheduleContent');
+            const title = document.getElementById('dayTitle');
+            
+            title.innerHTML = `<i class="fas fa-clock"></i> ${schedule.title}`;
+            content.innerHTML = '';
+            
+            schedule.tasks.forEach((task, index) => {
+                const taskDiv = document.createElement('div');
+                taskDiv.className = `task-item ${taskCompletion[day][index] ? 'completed' : ''}`;
+                taskDiv.innerHTML = `
+                    <div class="d-flex align-items-center">
+                        <input type="checkbox" class="form-check-input custom-checkbox me-3" 
+                               ${taskCompletion[day][index] ? 'checked' : ''} 
+                               onchange="toggleTask('${day}', ${index})">
+                        <div class="flex-grow-1">
+                            <span class="task-text">${task.task}</span>
+                            ${task.duration > 0 ? `<small class="text-muted ms-2">(${task.duration} daqiqa)</small>` : ''}
+                        </div>
+                        <span class="time-badge">${task.time}</span>
+                    </div>
+                `;
+                content.appendChild(taskDiv);
+            });
+            
+            updateDayProgress(day);
+        }
+
+        // Toggle task completion
+        function toggleTask(day, taskIndex) {
+            taskCompletion[day][taskIndex] = !taskCompletion[day][taskIndex];
+            saveData();
+            renderSchedule(day);
+            updateWeekProgress();
+        }
+
+        // Update day progress
+        function updateDayProgress(day) {
+            const tasks = weeklySchedule[day].tasks;
+            const completed = tasks.filter((_, index) => taskCompletion[day][index]).length;
+            const total = tasks.length;
+            const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+            
+            document.getElementById('dayProgress').textContent = `${percentage}%`;
+            document.getElementById('currentDayProgress').textContent = `${percentage}%`;
+        }
+
+        // Update week progress
+        function updateWeekProgress() {
+            let totalTasks = 0;
+            let completedTasks = 0;
+            
+            Object.keys(weeklySchedule).forEach(day => {
+                const tasks = weeklySchedule[day].tasks;
+                totalTasks += tasks.length;
+                completedTasks += tasks.filter((_, index) => taskCompletion[day][index]).length;
+            });
+            
+            const percentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+            
+            document.getElementById('totalTasks').textContent = totalTasks;
+            document.getElementById('completedTasks').textContent = completedTasks;
+            document.getElementById('weekPercentage').textContent = `${percentage}%`;
+            
+            const progressBar = document.getElementById('weekProgressBar');
+            progressBar.style.width = `${percentage}%`;
+            progressBar.textContent = `${percentage}%`;
+        }
+
+        // Reset current day
+        function resetDay() {
+            const activeTab = document.querySelector('.nav-link.active').dataset.day;
+            if (confirm(`${weeklySchedule[activeTab].title} ni qayta boshlashni hohlaysizmi?`)) {
+                weeklySchedule[activeTab].tasks.forEach((_, index) => {
+                    taskCompletion[activeTab][index] = false;
+                });
+                saveData();
+                renderSchedule(activeTab);
+                updateWeekProgress();
+            }
+        }
+
+        // Tab switching
+        document.getElementById('dayTabs').addEventListener('click', function(e) {
+            e.preventDefault();
+            if (e.target.classList.contains('nav-link')) {
+                document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+                e.target.classList.add('active');
+                const day = e.target.dataset.day;
+                renderSchedule(day);
+            }
+        });
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData();
+            renderSchedule('monday');
+            updateWeekProgress();
+        });
+    </script>
+</body>
+</html>
